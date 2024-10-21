@@ -32,6 +32,11 @@ public interface Octree
     {
         // TODO: YOUR CODE HERE!
         // Recursively call Create to initialize the Octree
+        if (depth == 0)
+            return new OctreeNode();
+
+
+
         return null;
     }
 }

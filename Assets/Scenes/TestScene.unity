@@ -827,8 +827,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b5275c2575c84b59aebf703756407e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nStartingParticles: 100
+  nStartingParticles: 101
   particlePrefab: {fileID: 8884174885331103408, guid: 1979970f487c9426688fdb3e1f7b5493, type: 3}
+  sceneBox:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 5, y: 5, z: 5}
 --- !u!4 &1378715757
 Transform:
   m_ObjectHideFlags: 0

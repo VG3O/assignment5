@@ -113,5 +113,5 @@ MonoBehaviour:
   velocity: {x: 0, y: 0, z: 0}
   damping: 1
   acceleration: {x: 0, y: 0, z: 0}
-  gravity: {x: 0, y: 0, z: 0}
+  gravity: {x: 0, y: -9.81, z: 0}
   inverseMass: 1

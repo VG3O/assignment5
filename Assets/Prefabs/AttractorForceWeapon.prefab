@@ -100,7 +100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetPos: {x: 0, y: 0, z: 0}
-  power: 150
+  power: 1026.6
 --- !u!114 &3368864049252006334
 MonoBehaviour:
   m_ObjectHideFlags: 0
