@@ -28,9 +28,10 @@ public class CollisionManager : MonoBehaviour
     private void Start()
     {
         // TODO: YOUR CODE HERE
-        // Create the Octree. Create prefabs within the bounding box of the scene.
-        //tree = Octree.Create();
+        // Create the Octree. Create prefabs within the bounding box of the scene
+        tree = Octree.Create(sceneBox.center, sceneBox.extents.x, 2);
 
+        // insert each created node into the octree, it should recursively insert into their children
         for (int i = 0; i < nStartingParticles; i++)
         {
             GameObject particle = Instantiate(particlePrefab);
@@ -39,6 +40,7 @@ public class CollisionManager : MonoBehaviour
                 Random.Range(sceneBox.min.y, sceneBox.max.y),
                 Random.Range(sceneBox.min.z, sceneBox.max.z)
             );
+            tree.Insert(particle.GetComponent<Sphere>());
         }
     }
 

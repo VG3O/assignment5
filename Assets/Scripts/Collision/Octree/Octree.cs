@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using Codice.Client.BaseCommands.Differences;
 
 public interface Octree
 {
@@ -33,11 +34,25 @@ public interface Octree
         // TODO: YOUR CODE HERE!
         // Recursively call Create to initialize the Octree
         if (depth == 0)
-            return new OctreeNode();
+            return new OctreeObjects();
 
+        // a parent node at this depth
+        OctreeNode parent = new OctreeNode(pos);
 
+        for (int i = 0; i < 8; i++ )
+        {
+            int xSign = i % 2 == 0 ? -1 : 1;
+            int ySign = (i / 2) % 2 == 0 ? -1 : 1;
+            int zSign = (i / 4) % 2 == 0 ? -1 : 1;
 
-        return null;
+            parent.children[i] = Create(new Vector3(
+               pos.x + (.5f * halfWidth)*(float)xSign,
+               pos.y + (.5f * halfWidth)*(float)ySign,
+               pos.z + (.5f * halfWidth)*(float)zSign
+            ), halfWidth * .5f, depth - 1);
+        }        
+        
+        return parent;
     }
 }
 
@@ -50,6 +65,11 @@ public class OctreeNode : Octree
     public Octree[] children;
 
     // TODO: YOUR CODE HERE
+    public OctreeNode(Vector3 pos)
+    {
+        position = pos;
+        children = new Octree[8];
+    }
 
     /// <summary>
     /// Inserts the given particle into the appropriate children. The particle
@@ -58,6 +78,60 @@ public class OctreeNode : Octree
     /// <param name="sphere">The bounding sphere of the particle to insert.</param>
     public void Insert(Sphere sphere)
     {
+        List<int> indices = new List<int>();
+        indices.Add(0); // assume we start in bucket 0
+
+        Vector3 distance = sphere.position - position;
+
+        // pickIndex() but matched for multiple buckets for partitioning each collision
+       
+        if (Mathf.Pow(sphere.Radius,2) > Mathf.Pow(distance.x,2))
+        { 
+            indices.Add(1);
+        }
+        else if (sphere.position.x > position.x)
+        {
+            int count  = indices.Count;
+            for (int i=0; i < count; i++)
+                indices[i] += 1;
+        }
+
+        if (Mathf.Pow(sphere.Radius, 2) > Mathf.Pow(distance.y, 2))
+        {
+            int count = indices.Count;
+            for (int i = 0; i < count; i++)
+            {
+                indices.Add(i + 2);
+            }
+        }
+        else if (sphere.position.y > position.y)
+        {
+            int count = indices.Count;
+            for (int i = 0; i < count; i++)
+            {
+                indices[i] += 2;
+            }
+        }
+        if(Mathf.Pow(sphere.Radius, 2) > Mathf.Pow(distance.z, 2))
+        {
+            int count = indices.Count;
+            for (int i = 0; i < count; i++)
+            {
+                indices.Add(i + 4);
+            }
+        }
+        else if (sphere.position.z > position.z)
+        {
+            int count = indices.Count;
+            for (int i = 0; i < count; i++)
+            {
+                indices[i] += 4;
+            }
+        }
+
+        // now recursively call insert to insert on the children
+        foreach (int i in indices)
+            children[i].Insert(sphere);
     }
 
     /// <summary>
@@ -65,6 +139,10 @@ public class OctreeNode : Octree
     /// </summary>
     public void ResolveCollisions()
     {
+        foreach (Octree octree in children)
+        {
+            octree.ResolveCollisions();
+        }
     }
 
     /// <summary>
@@ -72,6 +150,10 @@ public class OctreeNode : Octree
     /// </summary>
     public void Clear()
     {
+        foreach (Octree octree in children)
+        {
+            octree.Clear();
+        }
     }
 }
 
@@ -80,14 +162,7 @@ public class OctreeNode : Octree
 /// </summary>
 public class OctreeObjects : Octree
 {
-    public ICollection<Sphere> Objects
-    {
-        get
-        {
-            // TODO: YOUR CODE HERE!
-            return null;
-        }
-    }
+    public List<Sphere> Objects;
 
     // TODO: YOUR CODE HERE!
 
@@ -98,6 +173,7 @@ public class OctreeObjects : Octree
     /// <param name="particle">The particle to insert.</param>
     public void Insert(Sphere particle)
     {
+        Objects.Add(particle);
     }
 
     /// <summary>
@@ -106,6 +182,13 @@ public class OctreeObjects : Octree
     /// </summary>
     public void ResolveCollisions()
     {
+        for (int i = 0; i < Objects.Count; i++)
+        {
+            for (int j = i+1; j < Objects.Count; j++)
+            {
+                CollisionDetection.ApplyCollisionResolution(Objects[i], Objects[j]);
+            }
+        }
     }
 
     /// <summary>
@@ -113,5 +196,6 @@ public class OctreeObjects : Octree
     /// </summary>
     public void Clear()
     {
+        Objects.Clear();
     }
 }
