@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using Codice.Client.BaseCommands.Differences;
+using System.Linq;
 
 public interface Octree
 {
@@ -37,7 +38,8 @@ public interface Octree
             return new OctreeObjects();
 
         // a parent node at this depth
-        OctreeNode parent = new OctreeNode(pos);
+        OctreeNode parent = new OctreeNode();
+        parent.position = pos;
 
         for (int i = 0; i < 8; i++ )
         {
@@ -62,14 +64,9 @@ public interface Octree
 public class OctreeNode : Octree
 {
     public Vector3 position;
-    public Octree[] children;
+    public Octree[] children = new Octree[8];
 
     // TODO: YOUR CODE HERE
-    public OctreeNode(Vector3 pos)
-    {
-        position = pos;
-        children = new Octree[8];
-    }
 
     /// <summary>
     /// Inserts the given particle into the appropriate children. The particle
@@ -162,7 +159,16 @@ public class OctreeNode : Octree
 /// </summary>
 public class OctreeObjects : Octree
 {
-    public List<Sphere> Objects;
+    private List<Sphere> objects = new List<Sphere>();
+
+    public ICollection<Sphere> Objects
+    {
+        get
+        {
+            return objects;
+        }
+        
+    }
 
     // TODO: YOUR CODE HERE!
 
@@ -182,12 +188,15 @@ public class OctreeObjects : Octree
     /// </summary>
     public void ResolveCollisions()
     {
+        Sphere[] arr = Objects.ToArray();
+        PlaneCollider[] planes = GameObject.FindObjectsOfType<PlaneCollider>();
         for (int i = 0; i < Objects.Count; i++)
         {
-            for (int j = i+1; j < Objects.Count; j++)
-            {
-                CollisionDetection.ApplyCollisionResolution(Objects[i], Objects[j]);
-            }
+            for (int j = i+1; j < Objects.Count; j++)            
+                CollisionDetection.ApplyCollisionResolution(arr[i], arr[j]);
+            
+            foreach (PlaneCollider plane in planes)
+                CollisionDetection.ApplyCollisionResolution(arr[i], plane);
         }
     }
 

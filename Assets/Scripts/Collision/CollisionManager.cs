@@ -22,6 +22,8 @@ public class CollisionManager : MonoBehaviour
     [SerializeField]
     private GameObject particlePrefab;
 
+    private List<GameObject> particles = new List<GameObject>();
+
     [SerializeField]
     private Bounds sceneBox;
 
@@ -35,6 +37,7 @@ public class CollisionManager : MonoBehaviour
         for (int i = 0; i < nStartingParticles; i++)
         {
             GameObject particle = Instantiate(particlePrefab);
+            particles.Add(particle);
             particle.transform.position = new Vector3(
                 Random.Range(sceneBox.min.x, sceneBox.max.x),
                 Random.Range(sceneBox.min.y, sceneBox.max.y),
@@ -46,8 +49,11 @@ public class CollisionManager : MonoBehaviour
 
     private void TreeCollisionResolution()
     {
-        // TODO: YOUR CODE HERE
-        // Perform sphere-sphere collisions using the Octree
+        tree.Clear();
+        foreach (GameObject particle in particles)
+            tree.Insert(particle.GetComponent<Sphere>());
+
+        tree.ResolveCollisions();
     }
 
     private void StandardCollisionResolution()
@@ -74,7 +80,11 @@ public class CollisionManager : MonoBehaviour
     private void FixedUpdate()
     {
         CollisionChecks = 0;
-        StandardCollisionResolution();
+
+        if (collisionType == CollisionType.Standard)
+            StandardCollisionResolution();
+        else if (collisionType == CollisionType.Octree)
+            TreeCollisionResolution();
     }
 
     private void Update()
